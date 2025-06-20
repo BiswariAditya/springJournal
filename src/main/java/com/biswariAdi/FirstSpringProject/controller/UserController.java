@@ -5,66 +5,66 @@ import com.biswariAdi.FirstSpringProject.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collection;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserService userService;
-
     @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
+    private UserService userService;
+
+    private String getAuthenticatedUsername() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth.getName();
     }
 
-    // Get all users
-    @GetMapping
-    public ResponseEntity<Collection<Users>> getAllUsers() {
-        Collection<Users> allUsers = userService.getAllUsers();
-        if (allUsers.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(allUsers);
-    }
-
-
-    // Get user by username
-    @GetMapping("/{username}")
-    public ResponseEntity<Users> getUserByUsername(@PathVariable("username") String username) {
-        Optional<Users> user = userService.getAllUsers()
-                .stream()
-                .filter(u -> u.getUserName().equals(username))
-                .findFirst();
-
-        return user.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
-
-    // Create a new user
-    @PostMapping
-    public ResponseEntity<Users> createUser(@RequestBody Users user) {
+    // Update the currently authenticated user's information
+    @PutMapping
+    public ResponseEntity<?> updateUser(@RequestBody Users updatedUser) {
         try {
-            userService.saveUser(user);
-            return new ResponseEntity<>(user, HttpStatus.CREATED);
+            String username = getAuthenticatedUsername();
+            Users existingUser = userService.getUserByUserName(username);
+
+            if (existingUser == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+
+            // Avoid changing username unless you have proper handling for it
+            // existingUser.setUserName(updatedUser.getUserName());
+
+            if (updatedUser.getPassword() != null) {
+                existingUser.setPassword(updatedUser.getPassword());
+            }
+
+            userService.saveNewUser(existingUser);
+            return ResponseEntity.ok("User updated successfully");
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating user");
         }
     }
 
-    // Update an existing user by username
-    @PutMapping("/{username}")
-    public ResponseEntity<?> updateUser(@PathVariable("username") String username, @RequestBody Users updatedUser) {
-        Users existingUser = userService.getUserByUserName(username);
-        if (existingUser != null) {
-            existingUser.setUserName(updatedUser.getUserName());
-            existingUser.setPassword(updatedUser.getPassword());
-            userService.updateuser(existingUser);
-            return ResponseEntity.ok("User updated successfully");
+    // Delete the currently authenticated user
+    @DeleteMapping
+    public ResponseEntity<?> deleteUser() {
+        try {
+            String username = getAuthenticatedUsername();
+            Users user = userService.getUserByUserName(username);
+
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+
+            userService.deleteUser(user);
+            return ResponseEntity.ok("User deleted successfully");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting user");
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
     }
 }
