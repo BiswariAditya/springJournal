@@ -18,11 +18,17 @@ public class UserService {
 
     public void saveNewUser(Users user) {
         user.setPassword(encoder.encode(user.getPassword()));
-        user.setRoles(List.of("ROLE_USER")); // Default role for new users
+        user.setRoles(List.of("USER")); // Default role for new users
         userRepo.save(user);
     }
 
     public void saveUser(Users user) {
+        userRepo.save(user);
+    }
+
+    public void saveAdmin(Users user) {
+        user.setPassword(encoder.encode(user.getPassword()));
+        user.setRoles(List.of("USER","ADMIN"));
         userRepo.save(user);
     }
 
