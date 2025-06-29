@@ -4,6 +4,7 @@ import com.biswariAdi.FirstSpringProject.Entity.JournalEntry;
 import com.biswariAdi.FirstSpringProject.Entity.Users;
 import com.biswariAdi.FirstSpringProject.services.JournalEntryService;
 import com.biswariAdi.FirstSpringProject.services.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/journal")
+@Tag(name = "Journal APIs")
 public class JournalEntryController {
 
     @Autowired

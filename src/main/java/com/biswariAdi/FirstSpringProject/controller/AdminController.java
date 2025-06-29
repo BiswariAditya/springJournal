@@ -2,6 +2,7 @@ package com.biswariAdi.FirstSpringProject.controller;
 
 import com.biswariAdi.FirstSpringProject.Entity.Users;
 import com.biswariAdi.FirstSpringProject.services.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/admin")
+@Tag(name = "Admin APIs")
 public class AdminController {
 
     @Autowired
